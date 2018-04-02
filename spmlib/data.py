@@ -227,12 +227,13 @@ def create_dataset(m, timestep, var='all', chunks=(10, 300, 300)):
     for k, v in vars.items():
         filename = m.data_dir+'{}/{:010d}_{}'.format(v, timestep, v)+\
                    '_10609.6859.1_936.1062.90'
-        exist = _check_file_exists(filename)
         # account for funky V file names
-        if ~exist & (v=='V'):
-            filename = m.data_dir+'{}/{:010d}_{}'.format(v, timestep, v)+\
-                   '_10609.6858.1_936.1062.90_Neg'
-            exist = _check_file_exists(filename)
+        if v=='V':
+            exist = _check_file_exists(filename, verbose=False)
+            if ~exist:
+                filename = m.data_dir+'{}/{:010d}_{}'.format(v, timestep, v)+\
+                           '_10609.6858.1_936.1062.90_Neg'
+        exist = _check_file_exists(filename)
         d[k] = da.from_delayed(delayed(m.load_3d_data)(filename), (m.Nz, m.Nlat, m.Nlon), m.dtype)
         d[k] = d[k].rechunk(chunks)
 
@@ -416,13 +417,15 @@ def find_model_timestamps(tini, tend):
     return time_range
 
 
-def _check_file_exists(filename):
+def _check_file_exists(filename, verbose=True):
     """Test if a file exists
 
     Parameters
     ----------
     filename : str
         Path and filename to check
+    verbose : bool
+        Print message on screen if file does not exist (default True)
 
     Returns
     -------
@@ -435,7 +438,8 @@ def _check_file_exists(filename):
             pass
         exist = True
     except IOError:
-        print('{} does not exist'.format(filename))
+        if verbose:
+            print('{} does not exist'.format(filename))
         exist = False
     return exist
 
