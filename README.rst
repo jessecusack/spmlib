@@ -2,8 +2,6 @@ spmlib
 ======
 Python tools for handling data from Dimitris Menemenlis' 1/48 degree global numerical ocean simulation for the Samoan Passage region (Box 12). See example usage in `notebooks`_.
 
-`relative link`_.
-
 .. _notebooks: notebooks/
 
 Modules
