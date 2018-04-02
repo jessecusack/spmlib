@@ -9,7 +9,6 @@ import numpy as np
 import xarray as xr
 import gsw
 import scipy as sp
-import gvpy as gv
 from scipy import interpolate
 
 
@@ -309,15 +308,6 @@ class ModelVar(object):
 
     def __init__(self, xarray_obj):
         self._obj = xarray_obj
-
-    def plot(self, ti, **kwargs):
-        # todo: make sure its only one time step
-        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(12, 5))
-        h = gv.figure.pcm(self._obj.dist, self._obj.z, self._obj,
-                          ax=ax, **kwargs)
-        ax.set(ylim=(5300, 4000))
-        plt.colorbar(h)
-        return h
 
     def extract_section(self, lon, lat, spm, res=1, ext=0):
         z = spm.z.values
