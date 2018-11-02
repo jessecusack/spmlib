@@ -306,8 +306,8 @@ def create_dataset_timeseries(m, time_range, var='all', chunks=(10, 300, 300),
     # Somehow xarray expands all coordinates that are not dimensions along the
     # time vector. Not sure how to suppress this behaviour, so we simply remove
     # this here
-    vv = ['lon', 'lat', 'dxc', 'dyc', 'dxv', 'drc', 'drf',
-          'ra', 'hfacc']
+    vv = ['lon', 'lat', 'dxc', 'dyc', 'dxv', 'dyu', 'dxg', 'dyg', 'drc', 'drf',
+          'ra', 'raz', 'depth', 'hfacc']
     for vi in vv:
         d[vi] = d[vi].isel(time=0, drop=True)
 
