@@ -64,6 +64,14 @@ class LLCRegion:
                             dtype=self.dtype,shape=(self.Nz,self.Nlat,self.Nlon),
                             mode='r')
 
+        self.hfacw = np.memmap(self.grid_dir+'/hFacW_'+self.grid_size3d,
+                            dtype=self.dtype,shape=(self.Nz,self.Nlat,self.Nlon),
+                            mode='r')
+        
+        self.hfacs = np.memmap(self.grid_dir+'/hFacS_'+self.grid_size3d,
+                            dtype=self.dtype,shape=(self.Nz,self.Nlat,self.Nlon),
+                            mode='r')
+        
         self.drf = np.memmap(self.grid_dir+'/drf',dtype=self.dtype,
                             shape=(self.Nz), mode='r')
 
@@ -109,13 +117,13 @@ class LLCRegion:
  
 
     def load_2d_data(self, fni):
-        return np.memmap(fni,dtype=self.dtype,
-                         shape=(self.Nlat,self.Nlon), mode='r')
+        return np.memmap(fni, dtype=self.dtype,
+                         shape=(self.Nlat, self.Nlon), mode='r')
 
     def load_3d_data(self, fni):
         with open(fni, 'rb') as f:
             data = np.memmap(f, dtype=self.dtype,
-                         shape=(self.Nz, self.Nlat,self.Nlon), mode='r')
+                             shape=(self.Nz, self.Nlat, self.Nlon), mode='r')
         return data
 
 
@@ -199,27 +207,29 @@ def create_dataset(m, timestep, var='all', chunks=(10, 300, 300)):
 
     # generate xarray dataset with only grid information first
     ds = xr.Dataset(coords={'xc': (['xc'], xc, {'axis': 'X'}),
-                        'yc': (['yc'], yc, {'axis': 'Y'}),
-                        'lon': (['xc'], xc, {'axis': 'X'}),
-                        'lat': (['yc'], yc, {'axis': 'Y'}),
-                        'dxc': (['yc', 'xg'], m.dxc),
-                        'dyc': (['yg', 'xc'], m.dxc),
-                        'xg': (['xg'], xg, {'axis': 'X', 'c_grid_axis_shift': -0.5}),
-                        'yg': (['yg'], yg, {'axis': 'Y', 'c_grid_axis_shift': -0.5}),
-                        'dxg': (['yg', 'xc'], m.dxg),
-                        'dyg': (['yc', 'xg'], m.dyg),
-                        'dxv': (['yg', 'xg'], m.dxv),
-                        'dyu': (['yg', 'xg'], m.dyu),
-                        'z': (['z'], m.z, {'axis': 'Z'}, {'axis': 'Z'}),
-                        'zl': (['zl'], Zl, {'axis': 'Z', 'c_grid_axis_shift': -0.5}),
-                        'zu': (['zu'], Zu, {'axis': 'Z', 'c_grid_axis_shift': +0.5}),
-                        'zp1': (['zp1'], Zp1, {'axis': 'Z', 'c_grid_axis_shift': (-0.5,0.5)}),
-                        'drc': (['zp1'], drc, {'axis': 'Z'}),
-                        'drf': (['z'], m.drf, {'axis': 'Z'}),
-                        'ra': (['yc', 'xc'], m.rac),
-                        'raz': (['yg', 'xg'], m.raz),
-                        'depth': (['yc', 'xc'], m.hb),
-                        'hfacc': (['z', 'yc', 'xc'], m.hfacc)})
+                            'yc': (['yc'], yc, {'axis': 'Y'}),
+                            'lon': (['xc'], xc, {'axis': 'X'}),
+                            'lat': (['yc'], yc, {'axis': 'Y'}),
+                            'dxc': (['yc', 'xg'], m.dxc),
+                            'dyc': (['yg', 'xc'], m.dxc), 
+                            'xg': (['xg'], xg, {'axis': 'X', 'c_grid_axis_shift': -0.5}),
+                            'yg': (['yg'], yg, {'axis': 'Y', 'c_grid_axis_shift': -0.5}),
+                            'dxg': (['yg', 'xc'], m.dxg),
+                            'dyg': (['yc', 'xg'], m.dyg),
+                            'dxv': (['yg', 'xg'], m.dxv),
+                            'dyu': (['yg', 'xg'], m.dyu),
+                            'z': (['z'], m.z, {'axis': 'Z'}, {'axis': 'Z'}),
+                            'zl': (['zl'], Zl, {'axis': 'Z', 'c_grid_axis_shift': -0.5}),
+                            'zu': (['zu'], Zu, {'axis': 'Z', 'c_grid_axis_shift': +0.5}),
+                            'zp1': (['zp1'], Zp1, {'axis': 'Z', 'c_grid_axis_shift': (-0.5,0.5)}),
+                            'drc': (['zp1'], drc, {'axis': 'Z'}),
+                            'drf': (['z'], m.drf, {'axis': 'Z'}),
+                            'ra': (['yc', 'xc'], m.rac),
+                            'raz': (['yg', 'xg'], m.raz),
+                            'depth': (['yc', 'xc'], m.hb),
+                            'hfacc': (['z', 'yc', 'xc'], m.hfacc),
+                            'hfacw': (['z', 'yc', 'xg'], m.hfacw),
+                            'hfacs': (['z', 'yg', 'xc'], m.hfacs)})
 
     # define dictionary that will hold dask arrays
     d = {}
@@ -307,7 +317,7 @@ def create_dataset_timeseries(m, time_range, var='all', chunks=(10, 300, 300),
     # time vector. Not sure how to suppress this behaviour, so we simply remove
     # this here
     vv = ['lon', 'lat', 'dxc', 'dyc', 'dxv', 'dyu', 'dxg', 'dyg', 'drc', 'drf',
-          'ra', 'raz', 'depth', 'hfacc']
+          'ra', 'raz', 'depth', 'hfacc', 'hfacw', 'hfacs']
     for vi in vv:
         d[vi] = d[vi].isel(time=0, drop=True)
 
